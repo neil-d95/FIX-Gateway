@@ -17,11 +17,10 @@
 #  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 #  USA.import plugin
 
-#  This file serves as a starting point for a plugin.  This is a Thread based
-#  plugin where the main Plugin class creates a thread and starts the thread
-#  when the plugin's run() function is called.
+#  This is a compute plugin.  It calculates derivative points like averages,
+#  minimums or maximums and the like.  Specific calculations for things like
+#  True Airspeed could be done also.
 
-import time
 from collections import OrderedDict
 import fixgw.plugin as plugin
 
@@ -154,8 +153,8 @@ def spanFunction(inputs, output):
 
 
 class Plugin(plugin.PluginBase):
-    def __init__(self, name, config):
-        super(Plugin, self).__init__(name, config)
+    # def __init__(self, name, config):
+    #     super(Plugin, self).__init__(name, config)
 
     def run(self):
         for function in self.config["functions"]:
@@ -163,19 +162,20 @@ class Plugin(plugin.PluginBase):
                 f = averageFunction(function["inputs"], function["output"])
                 for each in function["inputs"]:
                     self.db_callback_add(each, f, self)
-            if function["function"].lower() == 'max':
+            elif function["function"].lower() == 'max':
                 f = maxFunction(function["inputs"], function["output"])
                 for each in function["inputs"]:
                     self.db_callback_add(each, f, self)
-            if function["function"].lower() == 'min':
+            elif function["function"].lower() == 'min':
                 f = minFunction(function["inputs"], function["output"])
                 for each in function["inputs"]:
                     self.db_callback_add(each, f, self)
-            if function["function"].lower() == 'span':
+            elif function["function"].lower() == 'span':
                 f = spanFunction(function["inputs"], function["output"])
                 for each in function["inputs"]:
                     self.db_callback_add(each, f, self)
-
+            else:
+                self.log.warning("Unknown function - {}".format(function["function"]))
 
     def stop(self):
         pass
@@ -188,3 +188,4 @@ class Plugin(plugin.PluginBase):
 
 # TODO: Add a check for Warns and alarms and annunciate appropriatly
 # TODO: Add tests for this plugin
+# TODO: write stop function to remove all the callbacks
